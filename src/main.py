@@ -76,13 +76,13 @@ def main():
 
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     source_dir = os.path.join(project_root, "static")
-    destination_dir = os.path.join(project_root, "public")
+    destination_dir = os.path.join(project_root, "docs")
     copy_directory_recursive(source_dir, destination_dir)
 
     generate_pages_recursive(
         os.path.join(project_root, "content"),
         os.path.join(project_root, "template.html"),
-        os.path.join(project_root, "public"),
+        os.path.join(project_root, "docs"),
         basepath,
     )
 
