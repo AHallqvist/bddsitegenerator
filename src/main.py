@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 
 from extract_title import extract_title
 from markdown_to_html_node import markdown_to_html_node
@@ -29,7 +30,7 @@ def copy_directory_recursive(source_dir, destination_dir):
     _copy_directory_contents(source_dir, destination_dir)
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     with open(from_path, "r", encoding="utf-8") as source_file:
@@ -42,6 +43,8 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(markdown)
 
     page_html = template.replace("{{ Title }}", title).replace("{{ Content }}", content_html)
+    page_html = page_html.replace('href="/', f'href="{basepath}')
+    page_html = page_html.replace('src="/', f'src="{basepath}')
 
     destination_dir = os.path.dirname(dest_path)
     if destination_dir:
@@ -51,7 +54,7 @@ def generate_page(from_path, template_path, dest_path):
         destination_file.write(page_html)
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     for entry in os.listdir(dir_path_content):
         content_path = os.path.join(dir_path_content, entry)
 
@@ -61,14 +64,16 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
 
             relative_path = os.path.relpath(content_path, dir_path_content)
             destination_file_path = os.path.join(dest_dir_path, relative_path).replace(".md", ".html")
-            generate_page(content_path, template_path, destination_file_path)
+            generate_page(content_path, template_path, destination_file_path, basepath)
             continue
 
         destination_subdir = os.path.join(dest_dir_path, entry)
-        generate_pages_recursive(content_path, template_path, destination_subdir)
+        generate_pages_recursive(content_path, template_path, destination_subdir, basepath)
 
 
 def main():
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     source_dir = os.path.join(project_root, "static")
     destination_dir = os.path.join(project_root, "public")
@@ -78,6 +83,7 @@ def main():
         os.path.join(project_root, "content"),
         os.path.join(project_root, "template.html"),
         os.path.join(project_root, "public"),
+        basepath,
     )
 
 
